@@ -1,2 +1,22 @@
 deepeval>=4.2.0
 python-dotenv>=1.0.0
+
+# Week 3 - RAG + Ragas
+# NOTE: ragas is intentionally NOT listed here - see rag/README.md.
+# Install it separately with `pip install ragas==0.3.9 --no-deps` AFTER
+# these, to avoid pulling in scikit-network, which requires a C++ compiler
+# and isn't needed for the metrics this project actually uses.
+chromadb>=1.5.0
+langchain-openai>=1.1.0
+langchain-core
+langchain-community
+langchain
+instructor
+diskcache
+tiktoken
+datasets
+gitpython
+appdirs
+networkx
+pillow
+openai>=1.100.0
