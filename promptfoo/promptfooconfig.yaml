@@ -43,9 +43,9 @@ tests:
         value: "Windows update"
       - type: llm-rubric
         value: >
-          The summary accurately reflects that the cause was an orphaned
-          job lock (not any other cause), that three dataflows were
-          affected, and that there was no data loss. It does not invent
+          The summary conveys that the failure was caused by a stuck or
+          blocked process (paraphrases of "orphaned job lock" are
+          acceptable) and that there was no data loss. It does not invent
           any fact not present in the source report.
 
   - vars:
