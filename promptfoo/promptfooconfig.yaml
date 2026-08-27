@@ -1,0 +1,88 @@
+# Promptfoo config: regression-testing a prompt used to summarise incident
+# reports (the same use case from Week 1, now tested from the PROMPT side
+# rather than the OUTPUT side).
+#
+# DeepEval (Week 1) answered: "is this specific output good?"
+# Promptfoo answers: "does this PROMPT reliably produce good outputs across
+# many inputs, and does changing the prompt improve or regress quality?"
+# That's the "prompt regression testing" / "catch a change before it ships"
+# use case these AI Evaluation Engineer job specs describe.
+#
+# Run with:
+#   promptfoo eval
+#   promptfoo view      (opens a browser UI to browse results)
+
+description: "Incident report summariser - prompt regression suite"
+
+providers:
+  - openai:gpt-4.1-mini
+
+prompts:
+  - |
+    Summarise the following incident report in 3 sentences for a
+    non-technical stakeholder. Do not invent any facts that are not in
+    the report - if something is unclear, say so rather than guessing.
+
+    Report:
+    {{report}}
+
+tests:
+  - vars:
+      report: >
+        Incident Summary - Data Pipeline Failure, Dataflow Gen2
+        'df_WAREHOUSE_1'. The scheduled refresh failed due to an orphaned
+        job lock caused by a separate process. Three dataflows were stuck
+        for approximately six hours. Resolution involved manually
+        terminating the hung process. No data loss occurred; only a delay
+        in report freshness. A secondary finding: gateway permissions were
+        missing for two of three on-premises data sources.
+    assert:
+      - type: contains
+        value: "six hours"
+      - type: not-contains
+        value: "Windows update"
+      - type: llm-rubric
+        value: >
+          The summary accurately reflects that the cause was an orphaned
+          job lock (not any other cause), that three dataflows were
+          affected, and that there was no data loss. It does not invent
+          any fact not present in the source report.
+
+  - vars:
+      report: >
+        Incident Summary - Authentication Outage. Between 09:14 and 09:47,
+        users were unable to sign in to the reporting portal. Root cause
+        was an expired TLS certificate on the authentication gateway,
+        which was not renewed automatically due to a misconfigured
+        renewal job. The certificate was manually renewed and the service
+        recovered without further action. No user data was affected.
+    assert:
+      - type: contains
+        value: "certificate"
+      - type: not-contains
+        value: "data breach"
+      - type: llm-rubric
+        value: >
+          The summary correctly identifies an expired TLS certificate as
+          the root cause, does not claim any user data was affected or
+          leaked, and does not invent a different root cause.
+
+  - vars:
+      report: >
+        Incident Summary - Report Latency Degradation. Over a two-week
+        period, dashboard refresh times gradually increased from ~2
+        minutes to ~40 minutes. Investigation found an unbounded growth
+        in a staging table due to a missing cleanup step in a nightly
+        job. Adding the missing cleanup step and archiving old rows
+        restored performance to baseline within 24 hours.
+    assert:
+      - type: contains-any
+        value:
+          - "staging table"
+          - "cleanup"
+      - type: llm-rubric
+        value: >
+          The summary correctly attributes the slowdown to unbounded
+          growth in a staging table due to a missing cleanup step, and
+          does not invent an unrelated cause such as a hardware failure
+          or network issue.
